@@ -46,6 +46,7 @@ const tools = [
 ]
 const DashboardPage = () => {
   const router = useRouter();
+  
   return (
     <div>
       <div className='mb-8 space-y-4'>

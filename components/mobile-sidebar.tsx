@@ -4,8 +4,11 @@ import { Button } from './ui/button'
 import { Menu } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet'
 import Sidebar from './sidebar'
-
-const MobileSidebar = () => {
+interface MobileSidebarProps {
+    apiLimitCount: number,
+    isPro: boolean,
+}
+const MobileSidebar = ({ apiLimitCount = 0, isPro = false }: MobileSidebarProps) => {
     // when showing hydration error
     const [isMounted, setIsMounted] = useState(false)
     useEffect(() => {
@@ -19,8 +22,8 @@ const MobileSidebar = () => {
                     <Menu />
                 </Button>
             </SheetTrigger>
-            <SheetContent side={"left"} className='p-0'>
-                <Sidebar />
+            <SheetContent side={"left"} className='p-0 h-full w-80 lg:hidden'>
+                <Sidebar apiLimitCount={apiLimitCount} isPro={isPro} />
             </SheetContent>
         </Sheet>
     )

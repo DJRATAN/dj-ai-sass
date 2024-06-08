@@ -5,7 +5,7 @@ import Heading from '@/components/heading'
 import Loader from '@/components/loader'
 import { Button } from '@/components/ui/button'
 import axios from 'axios';
-import ReactMarkDown from "react-markdown"
+
 import {
     Form,
     FormControl,
@@ -16,22 +16,22 @@ import { Input } from "@/components/ui/input"
 import UserAvatar from '@/components/user-avatar'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Code, MessageSquare } from 'lucide-react'
+import { MessageSquare, Music } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from "zod"
 import ChatCompletionRequestMessage from 'openai'
 import { useProModal } from '@/hooks/use-pro-modal'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
-const CodePage = () => {
+const MusicPage = () => {
     const router = useRouter();
-    const [message, setMessage] = useState<ChatCompletionRequestMessage[]>([])
     const proModal = useProModal();
+    const [music, setMusic] = useState<string>()
     const formschema = z.object({
         prompt: z.string().min(1, {
-            message: "Prompt is required"
+            message: "Music Prompt is required"
         })
     })
     const form = useForm<z.infer<typeof formschema>>({
@@ -43,18 +43,10 @@ const CodePage = () => {
     const isLoading = form.formState.isSubmitting;
     const onSubmit = async (values: z.infer<typeof formschema>) => {
         try {
-            const userMessage: ChatCompletionRequestMessage = {
-                role: "user",
-                content: values.prompt,
-            }
-            const newMessage = [...message, userMessage]
-            // console.log(newMessage)
-            const response = await axios.post("/api/code", {
-                message: newMessage,
-            })
-
-            console.log(response.data);
-            setMessage((current) => [...current, userMessage, response.data])
+            setMusic(undefined)
+            const response = await axios.post("/api/music", values)
+            setMusic(response.data.audio)
+            // console.log(response.data);
             form.reset();
 
         } catch (error: any) {
@@ -71,11 +63,11 @@ const CodePage = () => {
     return (
         <div>
             <Heading
-                title='Code Generation'
-                description='Generate code using descriptive text.'
-                icon={Code}
-                iconColor='text-green-700'
-                bgColor='bg-green-700/10'
+                title='Music Generation'
+                description='Turn your prompt into music'
+                icon={Music}
+                iconColor='text-emerald-500'
+                bgColor='bg-emerald-500/10'
             />
             <div className='px-4 lg:px-8'>
                 <div>
@@ -90,7 +82,7 @@ const CodePage = () => {
                                         <FormControl className='m-0 p-0'>
                                             <Input className='border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent'
                                                 disabled={isLoading}
-                                                placeholder='How do I calculate the radius of a circle?' {...field} />
+                                                placeholder='Radhe Krishn Fluit Play' {...field} />
                                         </FormControl>
                                     </FormItem>
                                 )}
@@ -101,36 +93,14 @@ const CodePage = () => {
                 </div>
                 <div className='space-y-4 mt-4'>
                     {isLoading && (<div className='p-8 rounded-lg w-full flex items-center justify-center bg-muted'><Loader /></div>)}
-                    {message.length === 0 && !isLoading && (<Empty label='No conversation started.' />)}
-                    <div className='flex flex-col-reverse gap-y-4'>
-                        {message.map((message) => (
-                            <div
-                                key={message.content}
-                                className={cn("p-8 w-full flex items-start gap-x-8 rounded-lg", message.role === 'user' ? 'bg-white border border-black/10' : 'bg-muted')}
-                            >
-                                {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-                                <p className='text-sm'>
-                                    <ReactMarkDown
-                                        components={{
-                                            pre: ({ node, ...props }) => (
-                                                <div className='overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg'>
-                                                    <pre {...props} />
-                                                </div>
-                                            ),
-                                            code: ({ node, ...props }) => (
-                                                <code className='bg-black/10 rounded-lg p-1' {...props} />
-                                            )
-                                        }} className={"text-sm overflow-hidden leading-7"}>
-                                        {message.content || ""}
-                                    </ReactMarkDown>
-                                </p>
-                            </div>
-                        ))}
-                    </div>
+                    {!music && !isLoading && (<Empty label='No Music Generated' />)}
+                    {music && (<audio controls className='w-full mt-8'>
+                        <source src={music} />
+                    </audio>)}
                 </div>
             </div>
         </div>
     )
 }
 
-export default CodePage
+export default MusicPage
